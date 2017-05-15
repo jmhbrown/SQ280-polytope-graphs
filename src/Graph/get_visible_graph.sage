@@ -50,5 +50,6 @@ def visible_graph(polyhedron, projection_vector, opt={'opposite_graph': False}):
 # Example
 proj_vector = vector(AA, [1,1,1/2])
 square_from_vertices = Polyhedron(vertices = [[1,1,1], [1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]])
+print("get_visible_graph imported and ran!")
 
-graph,back_graph = visible_graph(square_from_vertices, proj_vector, {'opposite_graph': True})
+#graph,back_graph = visible_graph(square_from_vertices, proj_vector, {'opposite_graph': True})
