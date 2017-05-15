@@ -1,5 +1,16 @@
 # Captian's Log
 
+## May 8 2017
+
+Gave up on running sage as a python module. 
+
+Got the code in `get_visible_graph` worked out - there is definitely room for improvement. Right now it takes a polyhedron and a vector and returns the visible graph. (Also, optionally, the opposite graph.)
+
+### TODO:
+ [] SHADER TIME!
+  [] full list of visible graphs?
+  [] automatically mapping graphs to colors?
+
 ## May 4 2017
 Working on getting sage installed as a python 2.7 library. Here's the situation:
 

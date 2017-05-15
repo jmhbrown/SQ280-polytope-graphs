@@ -17,7 +17,7 @@ def visible_faces(polyhedron, projection_vector):
             # depends on how efficient the polyhedron constructor is.
         elif dot < 0:
             hidden_faces.append(f)
-    return visible_faces, invisible_faces
+    return visible_faces, hidden_faces
     
 def face_list_to_graph(faces):
     """
