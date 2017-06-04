@@ -1,8 +1,7 @@
 from string import Template
 from sage.geometry.polyhedron.parent import Polyhedra
-from sage.plot.plot3d.tachyon import Texture
-import json
 import logging
+from multiprocessing.dummy import Pool as ThreadPool 
 from collections import defaultdict
 load("visible_graphs.sage")
 load("sphere.sage")
@@ -59,6 +58,7 @@ def build_tach_repr(polyhedron, sphere_subdivisions):
     Builds a tachyon scene representing the visible graph regions
     """
 
+    multithreaded = False
     logging.debug(" Building sphere. This may take a while for large numbers of subdivisions.")
     SP = triangulated_sphere(sphere_subdivisions) 
     logging.debug(" Done building sphere.")
@@ -73,14 +73,33 @@ def build_tach_repr(polyhedron, sphere_subdivisions):
     
     # Build a list of projection graphs.
     normals = get_normals(SP)
-    log_counter = 0
-    for vec in normals.values():
-    	if log_counter % 10 == 0:
-	    logging.debug(" Computing visible graph for normal # %d (of %d)" % (log_counter + 1, len(normals)))	
+    logging.debug(" Finding projection graphs. Also a lengthy procedure.")
+    if multithreaded == True:
+        pool = ThreadPool(4)
+        results = pool.map(
+                lambda v: [get_visible_graph(polyhedron, vector(v)), v],
+                normals.values()
+                )
 
-        log_counter += 1
-        graph = get_visible_graph(polyhedron, vector(vec)) 
-        projection_graphs[graph].append(vec)
+        pool.close() 
+        pool.join()
+
+        # pool.map returns an array. We turn it into a dictionary for later use.
+        for graph,vec in results:
+            projection_graphs[graph].append(vec)
+    else:
+        log_counter = 0
+        for vec in normals.values():
+            if log_counter % 10 == 0:
+                logging.debug(" Computing visible graph for normal # %d (of %d)" % (log_counter + 1, len(normals)))	
+            log_counter += 1
+            graph = get_visible_graph(polyhedron, vector(vec)) 
+            projection_graphs[graph].append(vec)
+
+    logging.debug(" All done finding projection graphs!")
+
+
+
 
     logging.debug(" Found %d unique graphs from %d vectors" %( len(projection_graphs), len(normals)))
 
