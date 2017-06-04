@@ -1,6 +1,6 @@
 from string import Template
 from sage.geometry.polyhedron.parent import Polyhedra
-import logging
+import logging, os
 from multiprocessing.dummy import Pool as ThreadPool 
 from collections import defaultdict
 load("visible_graphs.sage")
@@ -19,16 +19,21 @@ projection_graphs = defaultdict(lambda: [])
 
 
 def list_to_str(l):
+    """
+    Converts a list into a space delineated string.
+        :param l List:      List.
+        :return:            String.
+    """
     return " ".join(map(lambda x: str(x), l))
+
 
 def get_normals(polyhedron):
     """
     Returns a dictionary associating each face with its normal.
-    @params:
-        polyhedron  - Required  : three dimensional Polyhedron
-
-    @returns: A map between each face and its surface normal.
-        { PolyhedronFace: Vector }
+        :param polyhedron:      Required. Three dimensional Polyhedron
+            :type polyhedron:       Polyhedron
+        :return:                Dictionary of normal vectors. Keys are PolyhedronFace, values are Vector
+            :rtype:                 Dict
     """
     logging.debug(" Building map of surface normals.")
     normals = {}
@@ -40,12 +45,13 @@ def get_normals(polyhedron):
 def show_tachyon_scene(tachyon, view=(2,5,2), **kargs):
     """
     Actually shows (saves?) a tachyon scene.
-
-    @params:
-        tachyon -   Required: A tachyon scene will all relevant objects (planes, lights, etc.).
+        :param tachyon:     Required. A tachyon scene will all relevant objects (planes, lights, etc.).
+            :type tachyon:      Tachyon
+        :param view:        Optional. Camera position.
+            :type view:         Tuple, List.
+        :returns:           New Tachyon scene, with camera re-positioned.
+            :rtype:             Tachyon
     """
-
-
 
     new_tachyon = Tachyon(xres=800,yres=800, camera_center=view, look_at=(0,0,0))
     new_tachyon._objects = tachyon._objects
@@ -53,14 +59,21 @@ def show_tachyon_scene(tachyon, view=(2,5,2), **kargs):
 
     return new_tachyon
 
-def build_tach_repr(polyhedron, sphere_subdivisions):
+def build_tach_repr(polyhedron, sphere_subdivisions=3):
     """
     Builds a tachyon scene representing the visible graph regions
+        :param  polyhedron:         Required. Polyhedron to represent.
+            :type polyhedron:           Polyhedron.
+        :param sphere_subdivisions: Optional. Number of iterations of sphere subdivisions.
+            :type sphere_subdivisions:  Integer
+
+        :returns:                   Tachyon representation of the sphere, colored by visible graphs.
+            :rtype:                 Tachyon.
     """
 
     multithreaded = False
     logging.debug(" Building sphere. This may take a while for large numbers of subdivisions.")
-    SP = triangulated_sphere(sphere_subdivisions) 
+    SP = triangulated_sphere(polytopes.octahedron(), sphere_subdivisions) 
     logging.debug(" Done building sphere.")
 
     # Set up the tachyon scene
@@ -97,8 +110,6 @@ def build_tach_repr(polyhedron, sphere_subdivisions):
             projection_graphs[graph].append(vec)
 
     logging.debug(" All done finding projection graphs!")
-
-
 
 
     logging.debug(" Found %d unique graphs from %d vectors" %( len(projection_graphs), len(normals)))

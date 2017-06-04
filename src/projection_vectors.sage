@@ -3,8 +3,7 @@ from sage.geometry.polyhedron.parent import Polyhedra
 def get_surface_normals(polyhedron):
     """
     Returns an array of surface normals
-
-    `polyhedron`: a `Polyhedra`
+        :param polyhedron Polyhedron: The Polyhedron.
     """
     normals = []
     for f in polyhedron.faces(2):
@@ -14,8 +13,8 @@ def get_surface_normals(polyhedron):
 
 def get_edge_normals(polyhedron):
     """
-    Returns an array of 'edge normals', i.e.
-    all the sums of pairwise adjacent surfaces
+    Returns an array of 'edge normals', i.e. all the sums of pairwise adjacent surfaces
+        :param polyhedron Polyhedron: The Polyhedron.
     """
     edge_norms = set([])
     for v in polyhedron.vertex_generator():
@@ -28,7 +27,7 @@ def get_edge_normals(polyhedron):
 
 def get_vertex_normals(polyhedron):
     """
-    Returns an array of 'vertex normals', i.e.
-    the vectors which connect the origin and each vertex
+    Returns an array of 'vertex normals', i.e. the vectors which connect the origin and each vertex
+        :param polyhedron Polyhedron: The Polyhedron.
     """
     return map( lambda v: vector(v), polyhedron.vertices_list())
