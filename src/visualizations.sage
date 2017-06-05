@@ -41,14 +41,14 @@ def get_normals(polyhedron):
 
         Dictionary of normal vectors. Keys are PolyhedronFace, values are Vector
     """
-    logging.debug(" Building map of surface normals.")
+    logging.info(" Building map of surface normals.")
     normals = {}
     for face in polyhedron.faces(2):
         normals[face] = face.ambient_Hrepresentation()[0]._A
 
     return normals
 
-def show_tachyon_scene(tachyon, **kargs):
+def show_tachyon_scene(tachyon, **kwargs):
     """
     Actually shows (saves?) a tachyon scene.
 
@@ -57,6 +57,7 @@ def show_tachyon_scene(tachyon, **kargs):
         - ``tachyon`` -- A Tachyon. Required. A tachyon scene will all relevant objects (planes, lights, etc.).
 
         Tachyon scene options.
+
         - ``xres Integer`` -- Optional. (default: 800) X-direction resolution.
         - ``yres Integer`` -- Optional. (default: 800) Y-direction resolution.
         - ``camera_center List,Tuple`` -- Optional. (default: (2,5,2) Camera location.
@@ -70,7 +71,7 @@ def show_tachyon_scene(tachyon, **kargs):
     xres = parse_kwargs(kwargs, 'xres', 800); yres = parse_kwargs(kwargs, 'yres', 800)
     camera_center = parse_kwargs(kwargs, 'camera_center', (2,5,2))
 
-    new_tachyon = Tachyon(xres=xres,yres=yres, camera_center=camera_center, look_at=(0,0,0))
+    new_tachyon = Tachyon(xres=xres,yres=yres, camera_center=camera_center, look_at=(0,0,0), zoom=2)
     new_tachyon._objects = tachyon._objects
     new_tachyon.show()
 
@@ -85,11 +86,13 @@ def build_tach_repr(polyhedron, **kwargs):
         - ``multithreaded`` -- bool. Optional. Whether to use multithreading.
 
         Sphere building options.
+
         - ``seed_sphere`` -- A Polyhedron. Optional. A triangulated sphere to use for graphics.
         - ``build_sphere`` -- bool. Optional. Defaults to false. Whether to build a sphere for graphics.
         - ``n_iterations`` -- Integer. Optional. Defaults to 3. Number of iterations of sphere subdivisions.
 
         Tachyon options.
+
         - ``xres`` -- Integer. Optional. (default: 800) X-direction resolution.
         - ``yres`` -- Integer. Optional. (default: 800) Y-direction resolution.
         - ``camera_center`` -- List,Tuple. Optional. (default: (2,5,2) Camera location.
@@ -104,26 +107,26 @@ def build_tach_repr(polyhedron, **kwargs):
         sage: t = build_tach_repr(bucky_ball, build_sphere=True, sphere_subdivisions=3)
     """
 
-    logging.debug(" Options: %s" % (kwargs))
+    logging.info(" Options: %s" % (kwargs))
 
-    ### Options parsing.
+    # Multithreaded options.
     multithreaded = parse_kwargs(kwargs, 'multithreaded', False)
 
     # Build the sphere.
     build_sphere = parse_kwargs(kwargs, 'build_sphere', False)
 
     if build_sphere:
-        logging.debug(" Building sphere. This may take a while for large numbers of subdivisions.")
+        logging.info(" Building sphere. This may take a while for large numbers of subdivisions.")
         SP = triangulated_sphere(**kwargs)
-        logging.debug(" Done building sphere.")
+        logging.info(" Done building sphere.")
     else:
-        SP = seed_sphere
+        SP = parse_kwargs(kwargs, 'seed_sphere', polytopes.octahedron())
 
     # Set up the tachyon scene
     xres = parse_kwargs(kwargs, 'xres', 800); yres = parse_kwargs(kwargs, 'yres', 800)
     camera_center = parse_kwargs(kwargs, 'camera_center', (2,5,2))
 
-    t = Tachyon(xres=xres,yres=yres, camera_center=camera_center, look_at=(0,0,0))
+    t = Tachyon(xres=xres,yres=yres, camera_center=camera_center, look_at=(0,0,0), zoom=2)
     t.light((0,0,50), 0.5, (1,1,1))
     t.light((10,0,30), 0.5, (1,1,1))
     t.light((0,10,30), 0.5, (1,1,1))
@@ -137,9 +140,9 @@ def build_tach_repr(polyhedron, **kwargs):
 
     # Build a list of projection graphs.
     normals = get_normals(SP)
-    logging.debug(" Finding projection graphs. Also a lengthy procedure.")
+    logging.info(" Finding projection graphs. This is often a lengthy procedure.")
     if multithreaded:
-        logging.debug(" Running in multithreaded mode!")
+        logging.info(" Running in multithreaded mode!")
         pool = ThreadPool(4)
         results = pool.map(
                 lambda v: [get_visible_graph(polyhedron, vector(v)), v],
@@ -153,7 +156,7 @@ def build_tach_repr(polyhedron, **kwargs):
         for graph,vec in results:
             projection_graphs[graph].append(vec)
     else:
-        logging.debug(" Running in single threaded mode!")
+        logging.info(" Running in single threaded mode!")
         log_counter = 0
         for vec in normals.values():
             if log_counter % 10 == 0:
@@ -162,34 +165,35 @@ def build_tach_repr(polyhedron, **kwargs):
             graph = get_visible_graph(polyhedron, vector(vec))
             projection_graphs[graph].append(vec)
 
-    logging.debug(" All done finding projection graphs!")
+    logging.info(" All done finding projection graphs!")
 
 
-    logging.debug(" Found %d unique graphs from %d vectors" %( len(projection_graphs), len(normals)))
+    logging.info(" Found %d unique graphs from %d vectors" %( len(projection_graphs.keys()), len(normals)))
 
     # Get a list of enough colors - one for each unique graph
     # Then build a map between the graphs and tachyon textures
     colors = rainbow(len(projection_graphs), format='rgbtuple')
-    logging.debug(" Colors for this graphic: %s" % ( colors ))
+    logging.info(" Colors for this graphic: %s" % (colors))
     vector_textures = {}
 
     # Build textures for each color, then populates a map
     # between textures and normals (the projection vectors.)
-    logging.debug(" Adding textures to tachyon scene.")
+    logging.info(" Adding textures to tachyon scene.")
     for graph in projection_graphs.keys():
         this_texture_id = str(len(colors))
         this_color = colors.pop()
 
-        t.texture(this_texture_id, opacity=0.9, color=this_color)
+        t.texture(this_texture_id, opacity=0.95, diffuse=0.7, color=this_color)
         vector_textures[this_texture_id] = projection_graphs[graph]
 
 
     # associate a color with each face then add the corresponding triangle
     # to the tachyon scene.
-    logging.debug(" Adding triangles to tachyon scene.")
+    logging.info(" Adding triangles to tachyon scene.")
     for face,normal in normals.items():
         verts = map(lambda v: list(v), face.vertices())
         this_texture = next(k for k,v in vector_textures.items() if v.count(normal) )
         t.triangle(verts[0], verts[1], verts[2], this_texture)
 
+    logging.info(" All Done!")
     return t

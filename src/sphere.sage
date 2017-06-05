@@ -16,11 +16,12 @@ def triangulated_sphere(**kwargs):
 
     INPUT:
 
-        - ``seed_poly`` --  A Polyhedron. Optional. Defaults to an octahedron. Base polytope to apply iterations to.
+        - ``seed_sphere`` --  A Polyhedron. Optional. Defaults to an octahedron. Base polytope to apply iterations to.
         - ``n_iterations`` --  An Integer. Optional. Number of times to divide faces.
         - ``multithreaded`` -- Bool. Optional. Whether to run in multithreaded mode.
 
         Save Options:
+
         - ``save_poly`` --  Bool. Optional. Defaults to False. Whether to save the polytope
         - ``save_filepath`` --  String. Optional. Defaults to cwd+'/output'. Directory to save the polytope in.
         - ``save_filename`` --  String. Optional. Filename used for save file.
@@ -30,9 +31,10 @@ def triangulated_sphere(**kwargs):
         A polyhedron corresponding to a Triangulation of the sphere.
 
     """
-
-    poly = parse_kwargs(kwargs, 'seed_poly', polytopes.octahedron())
+    
+    poly = parse_kwargs(kwargs, 'seed_sphere', polytopes.octahedron())
     new_verts = poly.vertices_list();
+    logging.info(" Starting with a polyhedron on %d vertices." % len(new_verts))
 
     n_iterations = parse_kwargs(kwargs, 'n_iterations', 3)
     multithreaded = parse_kwargs(kwargs, 'multithreaded', False)
@@ -41,10 +43,11 @@ def triangulated_sphere(**kwargs):
 
     # Make the new list.
     for i in range(1, n_iterations+1):
-        logging.debug(" Working sphere subdivision # %d (of %d)" % (i, n_iterations))
+        logging.info(" Working sphere subdivision # %d (of %d)" % (i, n_iterations))
         if multithreaded:
             pool = ThreadPool(4)
             # XXX - this will add two of each new vertex. Non-ideal, but it doesn't seem to cause issues.
+            # XXX - Doesn't work for polyhedrons with symbolically defined vertices?
             new_verts_tmp = pool.map(
                     lambda v: list(safe_normalize((v.vector()+n.vector())/2) for n in v.neighbors()),
                     poly.vertices()
@@ -65,9 +68,9 @@ def triangulated_sphere(**kwargs):
     save_poly = parse_kwargs(kwargs, 'save_poly', False)
     if save_poly:
         default_filepath = os.getcwd()+"/output/"
-        default_filename = "%s_sphere_%d_faces" % (
+        default_filename = "%s_sphere_%d_vertices" % (
                 datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
-                poly.n_facets()
+                poly.n_vertices()
             )
 
         save_filename = parse_kwargs(kwargs, 'save_filename', default_filename)
