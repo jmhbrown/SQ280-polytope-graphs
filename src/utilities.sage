@@ -33,3 +33,20 @@ def get_normals(polyhedron):
 
     return normals
 
+def random_polyhedron(**kwargs):
+    """
+    Returns a random compact convex polyhedron.
+
+    INPUT:
+
+    - ``n_vertices`` -- Integer. Optional (default: 4) The number of vertices.
+
+    OUTPUT:
+
+        A Polyhedron with `n_vertices` vertices.
+    """
+
+    n_vertices = parse_kwargs(kwargs, 'n_vertices', 4)
+
+    vertices = map(lambda x: vector((gauss(0,1) for d in range(3))).normalized(), range(n_vertices))
+    return Polyhedron(vertices=vertices)

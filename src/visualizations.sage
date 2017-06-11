@@ -10,7 +10,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Code for visualizing visible graphs.
 
-projection_graphs = defaultdict(lambda: [])
 
 
 def list_to_str(l):
@@ -121,6 +120,8 @@ def build_tach_repr(polyhedron, **kwargs):
 
     # Build a list of projection graphs.
     normals = get_normals(SP)
+    projection_graphs = defaultdict(lambda: [])
+
     logging.info(" Finding projection graphs. This is often a lengthy procedure.")
     if multithreaded:
         logging.info(" Running in multithreaded mode!")
