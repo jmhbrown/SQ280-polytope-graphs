@@ -1,6 +1,6 @@
 from sage.geometry.polyhedron.parent import Polyhedra
 from multiprocessing.dummy import Pool as ThreadPool
-import logging, os
+import logging, os, datetime
 load('utilities.sage')
 
 logging.basicConfig(level=logging.DEBUG)

@@ -29,25 +29,6 @@ def list_to_str(l):
     return " ".join(map(lambda x: str(x), l))
 
 
-def get_normals(polyhedron):
-    """
-    Returns a dictionary associating each face with its normal.
-
-    INPUT:
-
-        - ``polyhedron`` -- A Polyhedron. Required. Three dimensional Polyhedron
-
-    OUTPUT:
-
-        Dictionary of normal vectors. Keys are PolyhedronFace, values are Vector
-    """
-    logging.info(" Building map of surface normals.")
-    normals = {}
-    for face in polyhedron.faces(2):
-        normals[face] = face.ambient_Hrepresentation()[0]._A
-
-    return normals
-
 def show_tachyon_scene(tachyon, **kwargs):
     """
     Actually shows (saves?) a tachyon scene.
@@ -60,7 +41,7 @@ def show_tachyon_scene(tachyon, **kwargs):
 
         - ``xres Integer`` -- Optional. (default: 800) X-direction resolution.
         - ``yres Integer`` -- Optional. (default: 800) Y-direction resolution.
-        - ``camera_center List,Tuple`` -- Optional. (default: (2,5,2) Camera location.
+        - ``camera_center List,Tuple`` -- Optional. (default: (2,5,2)) Camera location.
 
     OUTPUT:
 
@@ -159,7 +140,7 @@ def build_tach_repr(polyhedron, **kwargs):
         logging.info(" Running in single threaded mode!")
         log_counter = 0
         for vec in normals.values():
-            if log_counter % 10 == 0:
+            if log_counter % 50 == 0:
                 logging.debug(" Computing visible graph for normal # %d (of %d)" % (log_counter + 1, len(normals)))
             log_counter += 1
             graph = get_visible_graph(polyhedron, vector(vec))
@@ -185,6 +166,7 @@ def build_tach_repr(polyhedron, **kwargs):
 
         t.texture(this_texture_id, opacity=0.95, diffuse=0.7, color=this_color)
         vector_textures[this_texture_id] = projection_graphs[graph]
+        logging.debug(" %d vectors with color %s" %(len(vector_textures[this_texture_id]), Color(this_color).html_color()))
 
 
     # associate a color with each face then add the corresponding triangle
