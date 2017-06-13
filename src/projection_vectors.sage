@@ -4,13 +4,25 @@ def get_surface_normals(polyhedron):
     """
     Returns an array of surface normals
 
-    INPUT:
+    INPUT::
 
         - ``polyhedron`` -- Polyhedron. The Polyhedron.
 
-    OUTPUT:
+    OUTPUT::
 
         A list of the vectors corresponding to 'surface normals'.
+
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: load('projection_vectors.sage')
+
+	Usage:
+
+	    sage: get_surface_normals(polytopes.cube())
+	    [(1, 0, 0), (0, 1, 0), (0, 0, 1), (0, 0, -1), (0, -1, 0), (-1, 0, 0)]
+
     """
     normals = []
     for f in polyhedron.faces(2):
@@ -22,13 +34,37 @@ def get_edge_normals(polyhedron):
     """
     Returns an array of 'edge normals', i.e. all the sums of pairwise adjacent surfaces
 
-    INPUT:
+    INPUT::
 
         - ``polyhedron`` -- Polyhedron. The Polyhedron.
 
-    OUTPUT:
+    OUTPUT::
 
         A list of the vectors corresponding to 'edge normals'.
+
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: load('projection_vectors.sage')
+
+	Usage:
+
+	    sage: get_edge_normals(polytopes.cube())
+
+	    [(0, 2, 2),
+	    (0, -2, 2),
+	    (-2, 0, 2),
+	    (-2, 0, -2),
+	    (2, -2, 0),
+	    (2, 2, 0),
+	    (0, -2, -2),
+	    (0, 2, -2),
+	    (-2, -2, 0),
+	    (2, 0, 2),
+	    (-2, 2, 0),
+	    (2, 0, -2)]
+
     """
     edge_norms = set([])
     for v in polyhedron.vertex_generator():
@@ -43,12 +79,32 @@ def get_vertex_normals(polyhedron):
     """
     Returns an array of 'vertex normals', i.e. the vectors which connect the origin and each vertex
 
-    INPUT:
+    INPUT::
 
         - ``polyhedron`` -- Polyhedron. The Polyhedron.
 
-    OUTPUT:
+    OUTPUT::
 
         A list of the vectors corresponding to the vertices.
+
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: load('projection_vectors.sage')
+
+	Usage:
+
+	    sage: get_vertex_normals(polytopes.cube())
+
+	    [(-1, -1, -1),
+	    (-1, -1, 1),
+	    (-1, 1, -1),
+	    (-1, 1, 1),
+	    (1, -1, -1),
+	    (1, -1, 1),
+	    (1, 1, -1),
+	    (1, 1, 1)]
+
     """
     return map( lambda v: vector(v), polyhedron.vertices_list())

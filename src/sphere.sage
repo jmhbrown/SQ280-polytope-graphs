@@ -3,7 +3,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import logging, os, datetime
 load('utilities.sage')
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Makes a triangulation of a unit sphere.
 
@@ -14,7 +14,7 @@ def triangulated_sphere(**kwargs):
     Makes a triangulation of a unit sphere, by repeatedly dividing the faces of an octahedron.
     The final triangulation will have `8*4^(subdivisions-1) = 2*4^(subdivision)` sides.
 
-    INPUT:
+    INPUT::
 
         - ``seed_sphere`` --  A Polyhedron. Optional. Defaults to an octahedron. Base polytope to apply iterations to.
         - ``n_iterations`` --  An Integer. Optional. Number of times to divide faces.
@@ -26,12 +26,39 @@ def triangulated_sphere(**kwargs):
         - ``save_filepath`` --  String. Optional. Defaults to cwd+'/output'. Directory to save the polytope in.
         - ``save_filename`` --  String. Optional. Filename used for save file.
 
-    OUTPUT:
+    OUTPUT::
 
         A polyhedron corresponding to a Triangulation of the sphere.
 
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: cd $PATH_TO_REPO/SQ280-polytope-graphs/src
+	    sage: load('sphere.sage')
+
+	By default, creates a polyhedron with 258 vertices.
+
+	    sage: sphere = triangulated_sphere()
+	    INFO:root: Starting with a polyhedron on 6 vertices.
+	    INFO:root: Working sphere subdivision # 1 (of 3)
+	    INFO:root: Working sphere subdivision # 2 (of 3)
+	    INFO:root: Working sphere subdivision # 3 (of 3)
+	    sage: sphere
+	    A 3-dimensional polyhedron in RDF^3 defined as the convex hull of 258 vertices
+
+	Changing the number of iterations and the seed sphere, then save the resulting polyhedron.
+
+	    sage: sphere = triangulated_sphere(save_poly=True, seed_sphere=polytopes.octahedron(), n_iterations=2)
+	    INFO:root: Starting with a polyhedron on 6 vertices.
+	    INFO:root: Working sphere subdivision # 1 (of 2)
+	    INFO:root: Working sphere subdivision # 2 (of 2)
+	    INFO:root: Saving triangulated sphere to /home/jenny/code/SQ280-polytope-graphs/src/output/20170613_074629_sphere_66_vertices.sobj
+	    sage: sphere
+	    A 3-dimensional polyhedron in RDF^3 defined as the convex hull of 66 vertices
+
     """
-    
+
     poly = parse_kwargs(kwargs, 'seed_sphere', polytopes.octahedron())
     new_verts = poly.vertices_list();
     logging.info(" Starting with a polyhedron on %d vertices." % len(new_verts))
@@ -69,7 +96,7 @@ def triangulated_sphere(**kwargs):
     if save_poly:
         default_filepath = os.getcwd()+"/output/"
         default_filename = "%s_sphere_%d_vertices" % (
-                datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S'),
+                datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
                 poly.n_vertices()
             )
 
@@ -83,25 +110,40 @@ def triangulated_sphere(**kwargs):
             save_filepath += '/'
 
         if os.path.exists(save_filepath+save_filename):
-            logging.warn(" Overwriting savefile %s" % save_filepath+save_filename)
+            logging.warn(" Overwriting savefile %s.sobj" % (save_filepath+save_filename))
 
-        logging.info(" Saving triangulated sphere to %s" % save_filepath+save_filename)
+        logging.info(" Saving triangulated sphere to %s.sobj" % (save_filepath+save_filename))
         poly.save(save_filepath+save_filename)
 
     return poly
 
 def safe_normalize(vector):
     """
-    Normalizes non-zero vectors, and leaves the zero vector unchanged.
-    Useful since Vector.normalize() throws an error if handed the zero vector.
+    Normalizes non-zero vectors and leaves the zero vector unchanged.
+    Useful since Vector.normalize() throws an error if passed the zero vector.
 
-    INPUT:
+    INPUT::
 
         - ``vector`` -- Required. Vector to normalize.
 
-    OUTPUT:
+    OUTPUT::
 
         Normalized vector.
+
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: cd $PATH_TO_REPO/SQ280-polytope-graphs/src
+	    sage: load('sphere.sage')
+
+	Normalizing vectors:
+
+	    sage: safe_normalize(vector([0,0,0]))
+	    (0, 0, 0)
+	    sage: safe_normalize(vector([0,1,1]))
+	    (0, 1/2*sqrt(2), 1/2*sqrt(2))
+
     """
     if vector.is_zero():
         return vector
@@ -113,13 +155,28 @@ def make_numeric(vector):
     Tries to numerically approximate a vector. Leaves the vector unchanged if it fails.
     Useful since Vector.numerical_approx() throws an error over certain fields.
 
-    INPUT:
+    INPUT::
 
         - ``vector`` --  Required. Vector to numerially approximate.
 
-    OUTPUT:
+    OUTPUT::
 
         Approximated vector.
+
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: cd $PATH_TO_REPO/SQ280-polytope-graphs/src
+	    sage: load('sphere.sage')
+
+	Converting vectors:
+
+	    sage: v = vector([1,1,1]).normalized()
+	    sage: v.base_ring()
+	    Symbolic Ring
+	    sage: make_numeric(v).base_ring()
+	    Real Field with 53 bits of precision
     """
     try:
         return vector.numerical_approx()

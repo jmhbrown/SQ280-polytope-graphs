@@ -6,35 +6,17 @@ load("visible_graphs.sage")
 load("sphere.sage")
 load("utilities.sage")
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Code for visualizing visible graphs.
 
-
-
-def list_to_str(l):
-    """
-    Converts a list into a space delineated string.
-
-    INPUT:
-
-        - ``l List`` -- List.
-
-    OUTPUT:
-
-    A space-separated string containing the old list items.
-
-    """
-    return " ".join(map(lambda x: str(x), l))
-
-
 def show_tachyon_scene(tachyon, **kwargs):
     """
-    Actually shows (saves?) a tachyon scene.
+    Allows for adjusting the camera center and resolution of a tachyon scene.
 
-    INPUT:
+    INPUT::
 
-        - ``tachyon`` -- A Tachyon. Required. A tachyon scene will all relevant objects (planes, lights, etc.).
+        - ``tachyon`` -- A Tachyon. Required. A tachyon scene with all relevant objects (planes, lights, etc.).
 
         Tachyon scene options.
 
@@ -42,9 +24,26 @@ def show_tachyon_scene(tachyon, **kwargs):
         - ``yres Integer`` -- Optional. (default: 800) Y-direction resolution.
         - ``camera_center List,Tuple`` -- Optional. (default: (2,5,2)) Camera location.
 
-    OUTPUT:
+    OUTPUT::
 
         New Tachyon scene, with camera re-positioned.
+
+    EXAMPLES::
+
+	Loading the code:
+
+	    sage: load('projection_vectors.sage')
+
+	Usage:
+
+            sage: tachyon.__class__
+            <class 'sage.plot.plot3d.tachyon.Tachyon'>
+            sage: new_tachyon = show_tachyon_scene(tachyon, camera_center=[1,1,1])
+            sage: new_tachyon.__class__
+            <class 'sage.plot.plot3d.tachyon.Tachyon'>
+            sage: new_tachyon
+            Launched png viewer for <class 'sage.plot.plot3d.tachyon.Tachyon'>
+
     """
 
     # Set up the tachyon scene
@@ -53,14 +52,14 @@ def show_tachyon_scene(tachyon, **kwargs):
 
     new_tachyon = Tachyon(xres=xres,yres=yres, camera_center=camera_center, look_at=(0,0,0), zoom=2)
     new_tachyon._objects = tachyon._objects
-    new_tachyon.show()
 
     return new_tachyon
 
 def build_tach_repr(polyhedron, **kwargs):
     """
     Builds a tachyon scene representing the visible graph regions.
-    INPUT:
+
+    INPUT::
 
         - ``polyhedron`` -- Polyhedron. Required. Polyhedron to represent.
         - ``multithreaded`` -- bool. Optional. Whether to use multithreading.
@@ -77,14 +76,49 @@ def build_tach_repr(polyhedron, **kwargs):
         - ``yres`` -- Integer. Optional. (default: 800) Y-direction resolution.
         - ``camera_center`` -- List,Tuple. Optional. (default: (2,5,2) Camera location.
 
-    OUTPUT:
+    OUTPUT::
 
         Tachyon representation of the sphere, colored by visible graphs.
 
+
     EXAMPLES::
 
-        sage: bucky_ball = polytopes.buckyball()
-        sage: t = build_tach_repr(bucky_ball, build_sphere=True, sphere_subdivisions=3)
+	Loading the code:
+
+	    sage: load('projection_vectors.sage')
+
+	Usage:
+
+            sage: tachyon = build_tach_repr(polytopes.cube())
+            INFO:root: Options: {}
+            INFO:root: Building map of surface normals.
+            INFO:root: Finding projection graphs. This is often a lengthy procedure.
+            INFO:root: Running in single threaded mode!
+            DEBUG:root: Computing visible graph for normal # 1 (of 8)
+            INFO:root: All done finding projection graphs!
+            INFO:root: Found 1 unique graphs from 8 vectors
+            INFO:root: Colors for this graphic: [(1.0, 0.0, 0.0)]
+            INFO:root: Adding textures to tachyon scene.
+            DEBUG:root: 8 vectors with color #ff0000
+            INFO:root: Adding triangles to tachyon scene.
+            INFO:root: All Done!
+
+        When running in multithreaded mode, it's best to work with polyhedrons defined over RDF^3. Vectors defined over other fields (sometimes?) cause the program to error out.
+
+            sage: tachyon = build_tach_repr(polytopes.dodecahedron(exact=False), multithreaded=True, seed_sphere=load('../output/sphere_1026.sobj'))
+            INFO:root: Options: {'seed_sphere': A 3-dimensional polyhedron in RDF^3 defined as the convex hull of 1026 vertices, 'multithreaded': True}
+            INFO:root: Building map of surface normals.
+            INFO:root: Finding projection graphs. This is often a lengthy procedure.
+            INFO:root: Running in multithreaded mode!
+            INFO:root: All done finding projection graphs!
+            INFO:root: Found 2 unique graphs from 2048 vectors
+            INFO:root: Colors for this graphic: [(1.0, 0.0, 0.0), (0.0, 1.0, 1.0)]
+            INFO:root: Adding textures to tachyon scene.
+            DEBUG:root: 536 vectors with color #00ffff
+            DEBUG:root: 1512 vectors with color #ff0000
+            INFO:root: Adding triangles to tachyon scene.
+            INFO:root: All Done!
+
     """
 
     logging.info(" Options: %s" % (kwargs))
